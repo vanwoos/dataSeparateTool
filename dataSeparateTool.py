@@ -39,7 +39,7 @@ def analyzePropFile(filename):
 	tmp2=[]
 	for prop in str.split("\n"):
 		if prop!="":
-			props.append(prop.split("="))
+			props.append(prop.split("=",1))
 	for tmp in props:
 		if tmp[0]=='':
 			print('exist empty key')
