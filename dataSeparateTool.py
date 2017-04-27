@@ -1,17 +1,21 @@
 import re
 import sys
 
+###################
+# 功能1：提取源代码中的字符串，并生成配置文件
+# 若源代码中有多个字符串是相同的，则在配置文件中体现为不同的条目
+# 
+# 功能2：利用配置文件中的设置，对源代码中的字符串进行数据分离。
+# 即使值相同，配置文件中的键也不能相同，若有相同的键，程序会进行提示。
+
+
 #间接调用
-#分析给定的代码文件，返回其中的字符串组成的list
+#分析给定的代码文件，返回其中的非空字符串组成的list
 def analyzeCodeFile(filename):
 	fo=open(filename,encoding="utf-8")
 	str=fo.read()
 	fo.close()
-	#strs=re.findall('"(?:[^"\\]++|\\.)*+"',str)
-	if(str.find('\"')!=-1):
-		print('代码文件中存在 \\" 字符，无法正确处理')
-		exit(0)
-	strs=re.findall('".*?"',str)
+	strs=re.findall(r'"(?:\\.|[^"\\\n])+?"',str)
 	return strs
 
 #提取代码中的字符串，生成配置文件
@@ -37,8 +41,11 @@ def analyzePropFile(filename):
 		if prop!="":
 			props.append(prop.split("="))
 	for tmp in props:
+		if tmp[0]=='':
+			print('exist empty key')
+			exit(0)
 		if tmp[0] in tmp2:
-			print('存在同名的键')
+			print('some keys have same name')
 			exit(0)
 		tmp2.append(tmp[0])
 	return props
@@ -52,7 +59,7 @@ def propReplace(filename,props):
 	for prop in props:
 		oldStr=prop[1]
 		newStr='prop.getProperty("{0}")'.format(prop[0])
-		str=str.replace(oldStr,newStr)
+		str=str.replace(oldStr,newStr,1)
 	fo.seek(0)
 	fo.write(str)
 	fo.close()
@@ -60,6 +67,7 @@ def propReplace(filename,props):
 #分析给定的数据文件，对代码文件进行数据分离
 def dataSeparate(codeFilename,propFilename):
 	props=analyzePropFile(propFilename)
+	#print(props)
 	propReplace(codeFilename,props)
 	
 	
